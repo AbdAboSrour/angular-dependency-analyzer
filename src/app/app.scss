@@ -1,0 +1,73 @@
+// More compact and comfortable spacing
+.container-fluid {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  // Compact card styling
+  .card {
+    border: 1px solid #e0e0e0;
+    
+    &-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      
+      h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+      }
+    }
+    
+    &-footer {
+      background-color: #f8f9fa;
+      border-top: 1px solid #e0e0e0;
+    }
+  }
+  
+  // Editor textarea styling - FIXED OVERFLOW
+  .editor-textarea {
+    resize: none;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 0.75rem;
+    overflow-wrap: break-word;  // Add this
+    word-wrap: break-word;      // Add this
+    white-space: pre-wrap;      // Add this - maintains formatting but wraps
+    
+    &:focus {
+      box-shadow: none;
+      outline: none;
+    }
+    
+    &::placeholder {
+      color: #adb5bd;
+      font-style: italic;
+    }
+  }
+  
+  .font-monospace {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+  
+  // Compact buttons
+  .btn-xs {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn {
+    i {
+      font-size: 0.875rem;
+    }
+  }
+  
+  // Smaller gaps
+  .g-2 {
+    gap: 0.5rem;
+  }
+  
+  // Shadow tweaks
+  .shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  }

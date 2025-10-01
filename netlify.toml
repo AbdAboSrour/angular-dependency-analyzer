@@ -1,0 +1,26 @@
+[build]
+  publish = "dist/angular-dependency-analyzer/browser"
+  command = "npm ci && npm run build -- --configuration production"
+
+# Client-side routing - all routes redirect to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Ensure no prerendering
+[build.environment]
+  NODE_VERSION = "20"
+  NETLIFY_SKIP_PREDEPLOY = "true"
+
+# Disable any automatic prerendering
+[build.processing]
+  skip_processing = false
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true

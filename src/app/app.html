@@ -1,0 +1,215 @@
+<app-header />
+<div class="container-fluid px-4 py-3">
+  <!-- Controls Section -->
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-body py-2">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+              <label for="angularVersion" class="form-label small mb-1">Target Angular Version</label>
+              <select id="angularVersion" class="form-select form-select-sm" [value]="selectedVersion()"
+                (change)="onVersionChange($event)" [disabled]="isAnalyzing()">
+                <option value="20">Angular 20</option>
+                <option value="19">Angular 19</option>
+                <option value="18">Angular 18</option>
+                <option value="17">Angular 17</option>
+                <option value="16">Angular 16</option>
+                <option value="15">Angular 15</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-primary btn-sm w-100" (click)="onAnalyze()" [disabled]="isAnalyzing()">
+                @if (isAnalyzing()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Analyzing...
+                } @else {
+                <i class="bi bi-search me-1"></i>
+                Analyze
+                }
+              </button>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-outline-secondary btn-sm w-100" (click)="onReset()" [disabled]="isAnalyzing()">
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Statistics - Show after analysis -->
+  @if (analysisResult()) {
+   <div class="row mb-3">
+     <div class="col-12">
+       <div class="row g-3 text-center">
+         <div class="col">
+           <div class="border rounded p-3 h-100 bg-light">
+             <h2 class="display-5 fw-bold text-dark mb-1">{{ analysisResult()!.summary.total }}</h2>
+             <small class="text-muted fw-semibold">Total</small>
+           </div>
+         </div>
+         <div class="col">
+           <div class="border rounded p-3 h-100 bg-light">
+             <h2 class="display-5 fw-bold text-primary mb-1">{{ analysisResult()!.summary.needsUpdate }}</h2>
+             <small class="text-muted fw-semibold">⬆️ Needs Update</small>
+           </div>
+         </div>
+         <div class="col">
+           <div class="border rounded p-3 h-100 bg-light">
+             <h2 class="display-5 fw-bold text-dark mb-1">{{ analysisResult()!.summary.lowRisk }}</h2>
+             <small class="text-muted fw-semibold">🟢 Low Risk</small>
+           </div>
+         </div>
+         <div class="col">
+           <div class="border rounded p-3 h-100 bg-light">
+             <h2 class="display-5 fw-bold text-dark mb-1">{{ analysisResult()!.summary.mediumRisk }}</h2>
+             <small class="text-muted fw-semibold">🟡 Medium Risk</small>
+           </div>
+         </div>
+         <div class="col">
+           <div class="border rounded p-3 h-100 bg-light">
+             <h2 class="display-5 fw-bold text-dark mb-1">{{ analysisResult()!.summary.highRisk }}</h2>
+             <small class="text-muted fw-semibold">🔴 High Risk</small>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+
+  }
+
+  <!-- Side-by-Side Editors -->
+  <div class="row g-3 mb-3">
+    <!-- Left Side - Input (Always Colored & Editable) -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">📋 Your package.json</h6>
+          <button class="btn btn-sm btn-outline-primary btn-xs" (click)="onPaste()" [disabled]="isAnalyzing()">
+            <i class="bi bi-clipboard"></i> Paste
+          </button>
+        </div>
+        <div class="card-body p-0 bg-dark">
+          @if (inputJson()) {
+          <app-json-viewer [jsonContent]="inputJson()" (jsonChange)="onInputChange($event)" />
+          } @else {
+          <div class="p-3 text-light fst-italic">
+            Click "Paste" button to add your package.json...
+          </div>
+          }
+        </div>
+        <div class="card-footer py-1 d-flex justify-content-between align-items-center">
+          <small class="text-muted">Lines: {{ inputLineCount }}</small>
+          <button class="btn btn-sm btn-outline-danger btn-xs" (click)="onClear()" [disabled]="isAnalyzing()">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Output (Read-only) -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">✨ Updated package.json</h6>
+          <div>
+            <button class="btn btn-sm btn-outline-success btn-xs me-1" (click)="onCopy()"
+              [disabled]="!outputJson() || isAnalyzing()">
+              <i class="bi bi-files"></i> Copy
+            </button>
+            <button class="btn btn-sm btn-outline-primary btn-xs" (click)="onDownload()"
+              [disabled]="!outputJson() || isAnalyzing()">
+              <i class="bi bi-download"></i>
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0 bg-dark">
+          @if (isAnalyzing()) {
+          <div class="d-flex justify-content-center align-items-center h-100 text-light">
+            <div class="text-center">
+              <div class="spinner-border mb-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p>Analyzing dependencies...</p>
+            </div>
+          </div>
+          } @else if (outputJson()) {
+          <app-json-viewer [jsonContent]="getAnnotatedJson()" />
+          } @else {
+          <div class="p-3 text-light fst-italic">
+            Updated package.json will appear here...
+          </div>
+          }
+        </div>
+        <div class="card-footer py-1">
+          <small class="text-muted">
+            @if (analysisResult()) {
+            {{ analysisResult()!.summary.needsUpdate }} of {{ analysisResult()!.summary.total }} need updates
+            } @else {
+            Ready to export
+            }
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Package Breakdown Table (shown after editors) -->
+  @if (analysisResult()) {
+  <div class="row mt-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header py-2">
+          <h6 class="mb-0">📊 Detailed Package Analysis</h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Package</th>
+                  <th>Current</th>
+                  <th>Recommended</th>
+                  <th>Status</th>
+                  <th>Risk</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pkg of analysisResult()!.analysis; track pkg.name) {
+                <tr>
+                  <td class="ps-3"><strong>{{ pkg.name }}</strong></td>
+                  <td><code class="small">{{ pkg.currentVersion }}</code></td>
+                  <td><code class="small">{{ pkg.recommendedVersion }}</code></td>
+                  <td>
+                    @if (pkg.needsUpdate) {
+                    <span class="badge bg-warning text-dark">⬆️ Update</span>
+                    } @else {
+                    <span class="badge bg-success">✅ Up to date</span>
+                    }
+                  </td>
+                  <td>
+                    @if (pkg.risk === 'high') {
+                    <span class="badge bg-danger">🔴 High</span>
+                    } @else if (pkg.risk === 'medium') {
+                    <span class="badge bg-warning text-dark">🟡 Medium</span>
+                    } @else {
+                    <span class="badge bg-success">🟢 Low</span>
+                    }
+                  </td>
+                  <td class="text-muted small">{{ pkg.notes }}</td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+</div>
